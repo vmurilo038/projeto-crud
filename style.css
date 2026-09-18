@@ -1,0 +1,280 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 50px auto;
+}
+
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.topo h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.topo p {
+    color: #6b7280;
+}
+
+.btn-adicionar {
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 7px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-adicionar:hover {
+    background: #1d4ed8;
+}
+
+.barra {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+}
+
+.busca {
+    width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d1d5db;
+    padding: 9px 12px;
+    border-radius: 6px;
+    color: #9ca3af;
+}
+
+.busca input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.tabela-container {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #f8fafc;
+}
+
+th {
+    text-align: left;
+    padding: 16px;
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 16px;
+    border-top: 1px solid #eef0f3;
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background: #fafafa;
+}
+
+.nome {
+    font-weight: 600;
+}
+
+.categoria {
+    color: #64748b;
+}
+
+.estoque {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.em-estoque {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.sem-estoque {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.preco {
+    font-weight: 600;
+}
+
+.acoes {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-editar,
+.btn-excluir {
+    border: none;
+    padding: 7px 11px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-editar {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.btn-excluir {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal.ativo {
+    display: flex;
+}
+
+.modal-conteudo {
+    width: 100%;
+    max-width: 450px;
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.modal-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.modal-topo h2 {
+    font-size: 20px;
+}
+
+.fechar {
+    border: none;
+    background: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #64748b;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+form input[type="text"],
+form input[type="number"] {
+    padding: 11px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    outline: none;
+    margin-bottom: 18px;
+}
+
+form input:focus {
+    border-color: #2563eb;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.checkbox input {
+    width: 16px;
+    height: 16px;
+}
+
+.botoes-form {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancelar,
+.btn-salvar {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-cancelar {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.btn-salvar {
+    background: #2563eb;
+    color: white;
+}
+
+@media (max-width: 700px) {
+
+    .topo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .busca {
+        width: 100%;
+    }
+
+    th,
+    td {
+        padding: 12px;
+    }
+
+}
