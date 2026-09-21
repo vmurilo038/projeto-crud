@@ -1,175 +1,464 @@
+let produtos = [];
 
-let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
-let produtoEditando = null;
+    let produtoEditando = null;
 
-const form = document.querySelector("#formProduto");
-const nome = document.querySelector("#nome");
-const categoria = document.querySelector("#categoria");
-const preco = document.querySelector("#preco");
-const estoque = document.querySelector("#estoque");
 
-const lista = document.querySelector("#listaProdutos");
-const pesquisa = document.querySelector("#pesquisa");
+    const btnAdicionar = document.getElementById("btnAdicionar");
 
-const modal = document.querySelector("#modal");
-const tituloModal = document.querySelector("#tituloModal");
+    const modal = document.getElementById("modal");
 
-const btnAdicionar = document.querySelector("#btnAdicionar");
-const fecharModal = document.querySelector("#fecharModal");
-const cancelar = document.querySelector("#cancelar");
+    const fecharModal = document.getElementById("fecharModal");
 
-const quantidade = document.querySelector("#quantidade");
+    const cancelar = document.getElementById("cancelar");
 
-function salvar() {
-    localStorage.setItem("produtos", JSON.stringify(produtos));
-}
+    const form = document.getElementById("formProduto");
 
-function mostrarProdutos(produtosMostrar) {
-    lista.innerHTML = "";
+    const lista = document.getElementById("listaProdutos");
 
-    quantidade.textContent = produtosMostrar.length + " produtos";
+    const pesquisa = document.getElementById("pesquisa");
 
-    produtosMostrar.forEach(function(produto, index) {
+    const tituloModal = document.getElementById("tituloModal");
 
-        const linha = document.createElement("tr");
+    const nome = document.getElementById("nome");
 
-        linha.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${produto.nome}</td>
-            <td>${produto.categoria}</td>
-            <td>${produto.estoque ? "Em estoque" : "Sem estoque"}</td>
-            <td>R$ ${Number(produto.preco).toFixed(2)}</td>
-            <td>
-                <button type="button" class="btn-editar" data-id="${produto.id}">
-                    Editar
-                </button>
+    const categoria = document.getElementById("categoria");
 
-                <button type="button" class="btn-excluir" data-id="${produto.id}">
-                    Excluir
-                </button>
-            </td>
-        `;
+    const preco = document.getElementById("preco");
 
-        linha.querySelector(".btn-editar").addEventListener("click", function() {
-            editarProduto(Number(this.dataset.id));
-        });
+    const estoque = document.getElementById("estoque");
 
-        linha.querySelector(".btn-excluir").addEventListener("click", function() {
-            excluirProduto(Number(this.dataset.id));
-        });
 
-        lista.appendChild(linha);
-    });
-}
+    btnAdicionar.onclick = function () {
 
-btnAdicionar.addEventListener("click", function() {
-    form.reset();
+        produtoEditando = null;
 
-    produtoEditando = null;
+        form.reset();
 
-    tituloModal.textContent = "Adicionar produto";
+        tituloModal.textContent = "Adicionar produto";
 
-    modal.classList.add("ativo");
-});
+        modal.classList.add("ativo");
 
-fecharModal.addEventListener("click", function() {
-    modal.classList.remove("ativo");
-});
+    };
 
-cancelar.addEventListener("click", function() {
-    modal.classList.remove("ativo");
-});
 
-form.addEventListener("submit", function(event) {
-    event.preventDefault();
+    fecharModal.onclick = function () {
 
-    if (produtoEditando === null) {
+        modal.classList.remove("ativo");
 
-        const novoProduto = {
-            id: Date.now(),
+    };
+
+
+    cancelar.onclick = function () {
+
+        modal.classList.remove("ativo");
+
+    };
+
+
+    form.onsubmit = function (event) {
+
+        event.preventDefault();
+
+
+        const produto = {
+
+            id: produtoEditando || Date.now(),
+
             nome: nome.value,
+
             categoria: categoria.value,
+
             preco: Number(preco.value),
+
             estoque: estoque.checked
+
         };
 
-        produtos.push(novoProduto);
 
-    } else {
+        if (produtoEditando === null) {
 
-        const produto = produtos.find(function(item) {
-            return item.id === produtoEditando;
+            produtos.push(produto);
+
+        } else {
+
+            for (let i = 0; i < produtos.length; i++) {
+
+                if (produtos[i].id === produtoEditando) {
+
+                    produtos[i] = produto;
+
+                }
+
+            }
+
+        }
+
+
+        salvarProdutos();
+
+        mostrarProdutos();
+
+        form.reset();
+
+        modal.classList.remove("ativo");
+
+        produtoEditando = null;
+
+    };
+
+
+    function mostrarProdutos() {
+
+        lista.innerHTML = "";
+
+
+        for (let i = 0; i < produtos.length; i++) {
+
+            const produto = produtos[i];
+
+
+            const linha = document.createElement("tr");
+
+
+            const numero = document.createElement("td");
+
+            numero.textContent = i + 1;
+
+
+            const nomeTd = document.createElement("td");
+
+            nomeTd.textContent = produto.nome;
+
+            nomeTd.className = "nome";
+
+
+            const categoriaTd = document.createElement("td");
+
+            categoriaTd.textContent = produto.categoria;
+
+            categoriaTd.className = "categoria";
+
+
+            const estoqueTd = document.createElement("td");
+
+            const estoqueSpan = document.createElement("span");
+
+            estoqueSpan.className = "estoque";
+
+
+            if (produto.estoque) {
+
+                estoqueSpan.classList.add("em-estoque");
+
+                estoqueSpan.textContent = "Em estoque";
+
+            } else {
+
+                estoqueSpan.classList.add("sem-estoque");
+
+                estoqueSpan.textContent = "Sem estoque";
+
+            }
+
+
+            estoqueTd.appendChild(estoqueSpan);
+
+
+            const precoTd = document.createElement("td");
+
+            precoTd.className = "preco";
+
+            precoTd.textContent =
+                "R$ " + produto.preco.toFixed(2);
+
+
+            const acoesTd = document.createElement("td");
+
+
+            const acoes = document.createElement("div");
+
+            acoes.className = "acoes";
+
+
+            const editar = document.createElement("button");
+
+            editar.type = "button";
+
+            editar.className = "btn-editar";
+
+            editar.textContent = "Editar";
+
+
+            editar.onclick = function () {
+
+                editarProduto(produto.id);
+
+            };
+
+
+            const excluir = document.createElement("button");
+
+            excluir.type = "button";
+
+            excluir.className = "btn-excluir";
+
+            excluir.textContent = "Excluir";
+
+
+            excluir.onclick = function () {
+
+                excluirProduto(produto.id);
+
+            };
+
+
+            acoes.appendChild(editar);
+
+            acoes.appendChild(excluir);
+
+            acoesTd.appendChild(acoes);
+
+
+            linha.appendChild(numero);
+
+            linha.appendChild(nomeTd);
+
+            linha.appendChild(categoriaTd);
+
+            linha.appendChild(estoqueTd);
+
+            linha.appendChild(precoTd);
+
+            linha.appendChild(acoesTd);
+
+
+            lista.appendChild(linha);
+
+        }
+
+    }
+
+
+    function editarProduto(id) {
+
+        for (let i = 0; i < produtos.length; i++) {
+
+            if (produtos[i].id === id) {
+
+                produtoEditando = id;
+
+                nome.value = produtos[i].nome;
+
+                categoria.value = produtos[i].categoria;
+
+                preco.value = produtos[i].preco;
+
+                estoque.checked = produtos[i].estoque;
+
+                tituloModal.textContent = "Editar produto";
+
+                modal.classList.add("ativo");
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    function excluirProduto(id) {
+
+        const confirmar =
+            confirm("Deseja excluir este produto?");
+
+
+        if (confirmar) {
+
+            produtos = produtos.filter(function (produto) {
+
+                return produto.id !== id;
+
+            });
+
+
+            salvarProdutos();
+
+            mostrarProdutos();
+
+        }
+
+    }
+
+
+    pesquisa.oninput = function () {
+
+        const texto = pesquisa.value.toLowerCase();
+
+
+        const produtosFiltrados = produtos.filter(function (produto) {
+
+            return (
+                produto.nome.toLowerCase().includes(texto) ||
+                produto.categoria.toLowerCase().includes(texto)
+            );
+
         });
 
-        if (produto) {
-            produto.nome = nome.value;
-            produto.categoria = categoria.value;
-            produto.preco = Number(preco.value);
-            produto.estoque = estoque.checked;
+
+        lista.innerHTML = "";
+
+
+        for (let i = 0; i < produtosFiltrados.length; i++) {
+
+            const produto = produtosFiltrados[i];
+
+            const linha = document.createElement("tr");
+
+
+            const numero = document.createElement("td");
+
+            numero.textContent = i + 1;
+
+
+            const nomeTd = document.createElement("td");
+
+            nomeTd.textContent = produto.nome;
+
+            nomeTd.className = "nome";
+
+
+            const categoriaTd = document.createElement("td");
+
+            categoriaTd.textContent = produto.categoria;
+
+            categoriaTd.className = "categoria";
+
+
+            const estoqueTd = document.createElement("td");
+
+            const estoqueSpan = document.createElement("span");
+
+            estoqueSpan.className = "estoque";
+
+
+            if (produto.estoque) {
+
+                estoqueSpan.classList.add("em-estoque");
+
+                estoqueSpan.textContent = "Em estoque";
+
+            } else {
+
+                estoqueSpan.classList.add("sem-estoque");
+
+                estoqueSpan.textContent = "Sem estoque";
+
+            }
+
+
+            estoqueTd.appendChild(estoqueSpan);
+
+
+            const precoTd = document.createElement("td");
+
+            precoTd.className = "preco";
+
+            precoTd.textContent =
+                "R$ " + produto.preco.toFixed(2);
+
+
+            const acoesTd = document.createElement("td");
+
+            const acoes = document.createElement("div");
+
+            acoes.className = "acoes";
+
+
+            const editar = document.createElement("button");
+
+            editar.type = "button";
+
+            editar.className = "btn-editar";
+
+            editar.textContent = "Editar";
+
+            editar.onclick = function () {
+
+                editarProduto(produto.id);
+
+            };
+
+
+            const excluir = document.createElement("button");
+
+            excluir.type = "button";
+
+            excluir.className = "btn-excluir";
+
+            excluir.textContent = "Excluir";
+
+            excluir.onclick = function () {
+
+                excluirProduto(produto.id);
+
+            };
+
+
+            acoes.appendChild(editar);
+
+            acoes.appendChild(excluir);
+
+            acoesTd.appendChild(acoes);
+
+
+            linha.appendChild(numero);
+
+            linha.appendChild(nomeTd);
+
+            linha.appendChild(categoriaTd);
+
+            linha.appendChild(estoqueTd);
+
+            linha.appendChild(precoTd);
+
+            linha.appendChild(acoesTd);
+
+
+            lista.appendChild(linha);
+
         }
+
+    };
+
+
+    function salvarProdutos() {
+
+        localStorage.setItem(
+            "produtos",
+            JSON.stringify(produtos)
+        );
+
     }
 
-    salvar();
 
-    mostrarProdutos(produtos);
+    function carregarProdutos() {
 
-    form.reset();
+        const dados =
+            localStorage.getItem("produtos");
 
-    produtoEditando = null;
 
-    modal.classList.remove("ativo");
-});
+        if (dados) {
 
-function editarProduto(id) {
+            produtos = JSON.parse(dados);
 
-    const produto = produtos.find(function(item) {
-        return item.id === id;
-    });
+        }
 
-    if (!produto) {
-        return;
+
+        mostrarProdutos();
+
     }
 
-    nome.value = produto.nome;
-    categoria.value = produto.categoria;
-    preco.value = produto.preco;
-    estoque.checked = produto.estoque;
 
-    produtoEditando = id;
-
-    tituloModal.textContent = "Editar produto";
-
-    modal.classList.add("ativo");
-}
-
-function excluirProduto(id) {
-
-    if (!confirm("Deseja excluir este produto?")) {
-        return;
-    }
-
-    produtos = produtos.filter(function(produto) {
-        return produto.id !== id;
-    });
-
-    salvar();
-
-    mostrarProdutos(produtos);
-}
-
-pesquisa.addEventListener("input", function() {
-
-    const texto = pesquisa.value.toLowerCase();
-
-    const resultado = produtos.filter(function(produto) {
-
-        return produto.nome.toLowerCase().includes(texto) ||
-               produto.categoria.toLowerCase().includes(texto);
-
-    });
-
-    mostrarProdutos(resultado);
-});
-
-mostrarProdutos(produtos);
-
+    carregarProdutos();
