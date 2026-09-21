@@ -1,464 +1,341 @@
+const API_KEY = "pro_9198188f7fe0f06cdc6ffaec77b61ac26652a459595f16d76435cbeab60c551e";
+
+const URL = "https://reqres.in/api/collections/products/records?project_id=51113";
+
 let produtos = [];
+let produtoEditando = null;
 
-    let produtoEditando = null;
+const lista = document.querySelector("#listaProdutos");
+const pesquisa = document.querySelector("#pesquisa");
 
+const form = document.querySelector("#formProduto");
+const nome = document.querySelector("#nome");
+const categoria = document.querySelector("#categoria");
+const preco = document.querySelector("#preco");
+const estoque = document.querySelector("#estoque");
 
-    const btnAdicionar = document.getElementById("btnAdicionar");
+const modal = document.querySelector("#modal");
+const tituloModal = document.querySelector("#tituloModal");
 
-    const modal = document.getElementById("modal");
+const btnAdicionar = document.querySelector("#btnAdicionar");
+const fecharModal = document.querySelector("#fecharModal");
+const cancelar = document.querySelector("#cancelar");
 
-    const fecharModal = document.getElementById("fecharModal");
-
-    const cancelar = document.getElementById("cancelar");
-
-    const form = document.getElementById("formProduto");
-
-    const lista = document.getElementById("listaProdutos");
-
-    const pesquisa = document.getElementById("pesquisa");
-
-    const tituloModal = document.getElementById("tituloModal");
-
-    const nome = document.getElementById("nome");
-
-    const categoria = document.getElementById("categoria");
-
-    const preco = document.getElementById("preco");
-
-    const estoque = document.getElementById("estoque");
-
-
-    btnAdicionar.onclick = function () {
-
-        produtoEditando = null;
-
-        form.reset();
-
-        tituloModal.textContent = "Adicionar produto";
-
-        modal.classList.add("ativo");
-
-    };
-
-
-    fecharModal.onclick = function () {
-
-        modal.classList.remove("ativo");
-
-    };
-
-
-    cancelar.onclick = function () {
-
-        modal.classList.remove("ativo");
-
-    };
-
-
-    form.onsubmit = function (event) {
-
-        event.preventDefault();
-
-
-        const produto = {
-
-            id: produtoEditando || Date.now(),
-
-            nome: nome.value,
-
-            categoria: categoria.value,
-
-            preco: Number(preco.value),
-
-            estoque: estoque.checked
-
-        };
-
-
-        if (produtoEditando === null) {
-
-            produtos.push(produto);
-
-        } else {
-
-            for (let i = 0; i < produtos.length; i++) {
-
-                if (produtos[i].id === produtoEditando) {
-
-                    produtos[i] = produto;
-
-                }
-
+async function buscarProdutos() {
+    try {
+        const resposta = await fetch(URL, {
+            method: "GET",
+            headers: {
+                "x-api-key": API_KEY,
+                "X-Reqres-Env": "prod"
             }
+        });
 
+        const dados = await resposta.json();
+
+        console.log("API:", dados);
+
+        if (!resposta.ok) {
+            throw new Error(dados.message || "Erro na API");
         }
 
-
-        salvarProdutos();
-
-        mostrarProdutos();
-
-        form.reset();
-
-        modal.classList.remove("ativo");
-
-        produtoEditando = null;
-
-    };
-
-
-    function mostrarProdutos() {
-
-        lista.innerHTML = "";
-
-
-        for (let i = 0; i < produtos.length; i++) {
-
-            const produto = produtos[i];
-
-
-            const linha = document.createElement("tr");
-
-
-            const numero = document.createElement("td");
-
-            numero.textContent = i + 1;
-
-
-            const nomeTd = document.createElement("td");
-
-            nomeTd.textContent = produto.nome;
-
-            nomeTd.className = "nome";
-
-
-            const categoriaTd = document.createElement("td");
-
-            categoriaTd.textContent = produto.categoria;
-
-            categoriaTd.className = "categoria";
-
-
-            const estoqueTd = document.createElement("td");
-
-            const estoqueSpan = document.createElement("span");
-
-            estoqueSpan.className = "estoque";
-
-
-            if (produto.estoque) {
-
-                estoqueSpan.classList.add("em-estoque");
-
-                estoqueSpan.textContent = "Em estoque";
-
-            } else {
-
-                estoqueSpan.classList.add("sem-estoque");
-
-                estoqueSpan.textContent = "Sem estoque";
-
-            }
-
-
-            estoqueTd.appendChild(estoqueSpan);
-
-
-            const precoTd = document.createElement("td");
-
-            precoTd.className = "preco";
-
-            precoTd.textContent =
-                "R$ " + produto.preco.toFixed(2);
-
-
-            const acoesTd = document.createElement("td");
-
-
-            const acoes = document.createElement("div");
-
-            acoes.className = "acoes";
-
-
-            const editar = document.createElement("button");
-
-            editar.type = "button";
-
-            editar.className = "btn-editar";
-
-            editar.textContent = "Editar";
-
-
-            editar.onclick = function () {
-
-                editarProduto(produto.id);
-
-            };
-
-
-            const excluir = document.createElement("button");
-
-            excluir.type = "button";
-
-            excluir.className = "btn-excluir";
-
-            excluir.textContent = "Excluir";
-
-
-            excluir.onclick = function () {
-
-                excluirProduto(produto.id);
-
-            };
-
-
-            acoes.appendChild(editar);
-
-            acoes.appendChild(excluir);
-
-            acoesTd.appendChild(acoes);
-
-
-            linha.appendChild(numero);
-
-            linha.appendChild(nomeTd);
-
-            linha.appendChild(categoriaTd);
-
-            linha.appendChild(estoqueTd);
-
-            linha.appendChild(precoTd);
-
-            linha.appendChild(acoesTd);
-
-
-            lista.appendChild(linha);
-
-        }
-
+        produtos = dados.data || [];
+
+        mostrarProdutos(produtos);
+
+    } catch (erro) {
+        console.error("ERRO:", erro);
+
+        lista.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    Erro ao carregar os produtos
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function mostrarProdutos(listaProdutos) {
+    lista.innerHTML = "";
+
+    if (listaProdutos.length === 0) {
+        lista.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    Nenhum produto encontrado
+                </td>
+            </tr>
+        `;
+        return;
     }
 
+    listaProdutos.forEach(function(produto, index) {
 
-    function editarProduto(id) {
+        const dados = produto.data || {};
 
-        for (let i = 0; i < produtos.length; i++) {
+        const nomeProduto = dados.name || "";
+        const categoriaProduto = dados.category || "";
+        const precoProduto = dados.price || 0;
 
-            if (produtos[i].id === id) {
+        const estoqueProduto =
+            dados.in_stock === true ||
+            dados.in_stock === "true";
 
-                produtoEditando = id;
+        const linha = document.createElement("tr");
 
-                nome.value = produtos[i].nome;
+        linha.innerHTML = `
+            <td>${index + 1}</td>
 
-                categoria.value = produtos[i].categoria;
+            <td>${nomeProduto}</td>
 
-                preco.value = produtos[i].preco;
+            <td>${categoriaProduto}</td>
 
-                estoque.checked = produtos[i].estoque;
+            <td>
+                ${estoqueProduto ? "Em estoque" : "Sem estoque"}
+            </td>
 
-                tituloModal.textContent = "Editar produto";
+            <td>
+                R$ ${Number(precoProduto).toFixed(2).replace(".", ",")}
+            </td>
 
-                modal.classList.add("ativo");
+            <td>
+                <button
+                    type="button"
+                    class="btn-editar"
+                    onclick="editarProduto('${produto.id}')">
+                    Editar
+                </button>
 
-                break;
+                <button
+                    type="button"
+                    class="btn-excluir"
+                    onclick="excluirProduto('${produto.id}')">
+                    Excluir
+                </button>
+            </td>
+        `;
 
-            }
+        lista.appendChild(linha);
+    });
+}
 
-        }
-
-    }
-
-
-    function excluirProduto(id) {
-
-        const confirmar =
-            confirm("Deseja excluir este produto?");
-
-
-        if (confirmar) {
-
-            produtos = produtos.filter(function (produto) {
-
-                return produto.id !== id;
-
-            });
-
-
-            salvarProdutos();
-
-            mostrarProdutos();
-
-        }
-
-    }
-
-
-    pesquisa.oninput = function () {
+if (pesquisa) {
+    pesquisa.addEventListener("input", function() {
 
         const texto = pesquisa.value.toLowerCase();
 
+        const produtosFiltrados = produtos.filter(function(produto) {
 
-        const produtosFiltrados = produtos.filter(function (produto) {
+            const dados = produto.data || {};
+
+            const nomeProduto =
+                String(dados.name || "").toLowerCase();
+
+            const categoriaProduto =
+                String(dados.category || "").toLowerCase();
 
             return (
-                produto.nome.toLowerCase().includes(texto) ||
-                produto.categoria.toLowerCase().includes(texto)
+                nomeProduto.includes(texto) ||
+                categoriaProduto.includes(texto)
             );
-
         });
 
+        mostrarProdutos(produtosFiltrados);
+    });
+}
 
-        lista.innerHTML = "";
+if (btnAdicionar) {
+    btnAdicionar.addEventListener("click", function() {
 
+        produtoEditando = null;
 
-        for (let i = 0; i < produtosFiltrados.length; i++) {
+        if (form) {
+            form.reset();
+        }
 
-            const produto = produtosFiltrados[i];
+        if (tituloModal) {
+            tituloModal.textContent = "Adicionar produto";
+        }
 
-            const linha = document.createElement("tr");
+        if (modal) {
+            modal.style.display = "flex";
+        }
+    });
+}
 
+if (fecharModal) {
+    fecharModal.addEventListener("click", fecharModalFuncao);
+}
 
-            const numero = document.createElement("td");
+if (cancelar) {
+    cancelar.addEventListener("click", fecharModalFuncao);
+}
 
-            numero.textContent = i + 1;
+function fecharModalFuncao() {
 
+    if (modal) {
+        modal.style.display = "none";
+    }
 
-            const nomeTd = document.createElement("td");
+    if (form) {
+        form.reset();
+    }
 
-            nomeTd.textContent = produto.nome;
+    produtoEditando = null;
+}
 
-            nomeTd.className = "nome";
+if (form) {
 
+    form.addEventListener("submit", async function(event) {
 
-            const categoriaTd = document.createElement("td");
+        event.preventDefault();
 
-            categoriaTd.textContent = produto.categoria;
+        
+        const produto = {
+            data: {
+                name: nome.value,
+                price: Number(preco.value),
+                category: categoria.value,
+                in_stock: estoque.checked
+            }
+        };
 
-            categoriaTd.className = "categoria";
+        try {
 
+            let resposta;
 
-            const estoqueTd = document.createElement("td");
+            if (produtoEditando === null) {
 
-            const estoqueSpan = document.createElement("span");
-
-            estoqueSpan.className = "estoque";
-
-
-            if (produto.estoque) {
-
-                estoqueSpan.classList.add("em-estoque");
-
-                estoqueSpan.textContent = "Em estoque";
+                resposta = await fetch(URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": API_KEY,
+                        "X-Reqres-Env": "prod"
+                    },
+                    body: JSON.stringify(produto)
+                });
 
             } else {
 
-                estoqueSpan.classList.add("sem-estoque");
+                const url =
+                    `https://reqres.in/api/collections/products/records/${produtoEditando}?project_id=51113`;
 
-                estoqueSpan.textContent = "Sem estoque";
-
+                resposta = await fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": API_KEY,
+                        "X-Reqres-Env": "prod"
+                    },
+                    body: JSON.stringify(produto)
+                });
             }
 
+            const dados = await resposta.json();
 
-            estoqueTd.appendChild(estoqueSpan);
+            console.log("RESPOSTA:", dados);
 
+            if (!resposta.ok) {
+                throw new Error(
+                    dados.message || "Erro ao salvar produto"
+                );
+            }
 
-            const precoTd = document.createElement("td");
+            alert(
+                produtoEditando === null
+                    ? "Produto adicionado!"
+                    : "Produto editado!"
+            );
 
-            precoTd.className = "preco";
+            fecharModalFuncao();
 
-            precoTd.textContent =
-                "R$ " + produto.preco.toFixed(2);
+            await buscarProdutos();
 
+        } catch (erro) {
 
-            const acoesTd = document.createElement("td");
+            console.error(erro);
 
-            const acoes = document.createElement("div");
-
-            acoes.className = "acoes";
-
-
-            const editar = document.createElement("button");
-
-            editar.type = "button";
-
-            editar.className = "btn-editar";
-
-            editar.textContent = "Editar";
-
-            editar.onclick = function () {
-
-                editarProduto(produto.id);
-
-            };
-
-
-            const excluir = document.createElement("button");
-
-            excluir.type = "button";
-
-            excluir.className = "btn-excluir";
-
-            excluir.textContent = "Excluir";
-
-            excluir.onclick = function () {
-
-                excluirProduto(produto.id);
-
-            };
-
-
-            acoes.appendChild(editar);
-
-            acoes.appendChild(excluir);
-
-            acoesTd.appendChild(acoes);
-
-
-            linha.appendChild(numero);
-
-            linha.appendChild(nomeTd);
-
-            linha.appendChild(categoriaTd);
-
-            linha.appendChild(estoqueTd);
-
-            linha.appendChild(precoTd);
-
-            linha.appendChild(acoesTd);
-
-
-            lista.appendChild(linha);
-
+            alert("Erro: " + erro.message);
         }
+    });
+}
 
-    };
+function editarProduto(id) {
 
+    const produto = produtos.find(function(item) {
+        return item.id === id;
+    });
 
-    function salvarProdutos() {
-
-        localStorage.setItem(
-            "produtos",
-            JSON.stringify(produtos)
-        );
-
+    if (!produto) {
+        alert("Produto não encontrado");
+        return;
     }
 
+    const dados = produto.data || {};
 
-    function carregarProdutos() {
+    nome.value = dados.name || "";
+    categoria.value = dados.category || "";
+    preco.value = dados.price || "";
 
-        const dados =
-            localStorage.getItem("produtos");
+    estoque.checked =
+        dados.in_stock === true ||
+        dados.in_stock === "true";
 
+    produtoEditando = id;
 
-        if (dados) {
-
-            produtos = JSON.parse(dados);
-
-        }
-
-
-        mostrarProdutos();
-
+    if (tituloModal) {
+        tituloModal.textContent = "Editar produto";
     }
 
+    if (modal) {
+        modal.style.display = "flex";
+    }
+}
 
-    carregarProdutos();
+async function excluirProduto(id) {
+
+    const confirmar = confirm(
+        "Tem certeza que deseja excluir este produto?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    try {
+
+        const url =
+            `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
+
+        const resposta = await fetch(url, {
+            method: "DELETE",
+            headers: {
+                "x-api-key": API_KEY,
+                "X-Reqres-Env": "prod"
+            }
+        });
+
+        if (!resposta.ok) {
+
+            const dados = await resposta.json().catch(() => ({}));
+
+            throw new Error(
+                dados.message || "Erro ao excluir produto"
+            );
+        }
+
+        alert("Produto excluído!");
+
+        await buscarProdutos();
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        alert("Erro ao excluir: " + erro.message);
+    }
+}
+
+buscarProdutos();
