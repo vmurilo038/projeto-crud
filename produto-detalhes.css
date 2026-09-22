@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
+
+.voltar {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.voltar:hover {
+    text-decoration: underline;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card h1 {
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.informacoes {
+    display: grid;
+    gap: 15px;
+}
+
+.informacao {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.informacao strong {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.informacao span {
+    font-size: 16px;
+    color: #1f2937;
+}
+
+.em-estoque {
+    color: #15803d !important;
+    font-weight: bold;
+}
+
+.sem-estoque {
+    color: #dc2626 !important;
+    font-weight: bold;
+}
+
+.avaliacao {
+    margin-top: 20px;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.avaliacao h2 {
+    margin-bottom: 10px;
+    font-size: 22px;
+}
+
+.avaliacao p {
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+.estrelas {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.estrela {
+    border: none;
+    background: none;
+    font-size: 38px;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.estrela:hover {
+    color: #facc15;
+    transform: scale(1.1);
+}
+
+.estrela.ativa {
+    color: #facc15;
+}
+
+#mensagemAvaliacao {
+    margin-top: 15px;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 20px;
+    }
+
+    .card,
+    .avaliacao {
+        padding: 20px;
+    }
+
+    .card h1 {
+        font-size: 23px;
+    }
+
+    .estrela {
+        font-size: 32px;
+    }
+
+}
+
