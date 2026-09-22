@@ -5,263 +5,295 @@ const URL = "https://reqres.in/api/collections/products/records?project_id=51113
 let produtos = [];
 let produtoEditando = null;
 
-const lista = document.querySelector("#listaProdutos");
+const listaProdutos = document.querySelector("#listaProdutos");
 const pesquisa = document.querySelector("#pesquisa");
+const btnAdicionar = document.querySelector("#btnAdicionar");
 
-const form = document.querySelector("#formProduto");
+const modal = document.querySelector("#modal");
+const tituloModal = document.querySelector("#tituloModal");
+const fecharModalBotao = document.querySelector("#fecharModal");
+const cancelar = document.querySelector("#cancelar");
+const formProduto = document.querySelector("#formProduto");
+
 const nome = document.querySelector("#nome");
 const categoria = document.querySelector("#categoria");
 const preco = document.querySelector("#preco");
 const estoque = document.querySelector("#estoque");
-
-const modal = document.querySelector("#modal");
-const tituloModal = document.querySelector("#tituloModal");
-
-const btnAdicionar = document.querySelector("#btnAdicionar");
-const fecharModal = document.querySelector("#fecharModal");
-const cancelar = document.querySelector("#cancelar");
 
 async function buscarProdutos() {
 
     try {
 
         const resposta = await fetch(URL, {
-            method: "GET",
+
             headers: {
                 "x-api-key": API_KEY,
                 "X-Reqres-Env": "prod"
             }
+
         });
+
+        if (!resposta.ok) {
+            throw new Error("Erro ao buscar produtos");
+        }
 
         const dados = await resposta.json();
 
         produtos = dados.data;
 
-        mostrarProdutos(produtos);
+        mostrarProdutos();
 
     } catch (erro) {
 
-        console.error("ERRO:", erro);
+        console.log(erro);
 
-        lista.innerHTML = `
+        listaProdutos.innerHTML = `
             <tr>
                 <td colspan="6">
-                    Erro ao carregar os produtos
+                    Não foi possível carregar os produtos.
                 </td>
             </tr>
         `;
+
     }
+
 }
 
-function mostrarProdutos(listaProdutos) {
+function mostrarProdutos() {
 
-    lista.innerHTML = "";
+    const textoPesquisa = pesquisa.value.toLowerCase();
 
-    if (listaProdutos.length === 0) {
+    listaProdutos.innerHTML = "";
 
-        lista.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    Nenhum produto encontrado
-                </td>
-            </tr>
-        `;
+    const produtosFiltrados = produtos.filter(function(produto) {
 
-        return;
-    }
+        const dados = produto.data;
 
-    listaProdutos.forEach(function(produto, index) {
+        return dados.name.toLowerCase().includes(textoPesquisa);
 
-        const dados = produto.data || {};
+    });
 
-        const nomeProduto = dados.name || "";
-        const categoriaProduto = dados.category || "";
-        const precoProduto = dados.price || 0;
+    produtosFiltrados.forEach(function(produto, index) {
 
-        const estoqueProduto =
-            dados.in_stock === true ||
-            dados.in_stock === "true";
+        const dados = produto.data;
 
         const linha = document.createElement("tr");
+
+        linha.style.animationDelay = (index * 0.05) + "s";
+
+        let statusEstoque = "";
+
+        if (dados.in_stock) {
+
+            statusEstoque = `
+                <span class="estoque em-estoque">
+                    Em estoque
+                </span>
+            `;
+
+        } else {
+
+            statusEstoque = `
+                <span class="estoque sem-estoque">
+                    Sem estoque
+                </span>
+            `;
+
+        }
 
         linha.innerHTML = `
             <td>${index + 1}</td>
 
-            <td>${nomeProduto}</td>
+            <td class="nome">
+                ${dados.name}
+            </td>
 
-            <td>${categoriaProduto}</td>
-
-            <td>
-                ${estoqueProduto ? "Em estoque" : "Sem estoque"}
+            <td class="categoria">
+                ${dados.category}
             </td>
 
             <td>
-                R$ ${Number(precoProduto).toFixed(2).replace(".", ",")}
+                ${statusEstoque}
+            </td>
+
+            <td class="preco">
+                R$ ${Number(dados.price).toFixed(2)}
             </td>
 
             <td>
 
-                <button
-                    type="button"
-                    class="btn-editar"
-                    onclick="editarProduto('${produto.id}')"
-                >
-                    Editar
-                </button>
+                <div class="acoes">
 
-                <button
-                    type="button"
-                    class="btn-excluir"
-                    onclick="excluirProduto('${produto.id}')"
-                >
-                    Excluir
-                </button>
+                    <button
+                        class="btn-visualizar"
+                        onclick="visualizarProduto('${produto.id}')"
+                    >
+                        👁
+                    </button>
+
+                    <button
+                        class="btn-editar"
+                        onclick="editarProduto('${produto.id}')"
+                    >
+                        Editar
+                    </button>
+
+                    <button
+                        class="btn-excluir"
+                        onclick="excluirProduto('${produto.id}')"
+                    >
+                        Excluir
+                    </button>
+
+                </div>
 
             </td>
         `;
 
-        lista.appendChild(linha);
+        listaProdutos.appendChild(linha);
+
     });
+
 }
 
-if (pesquisa) {
+pesquisa.addEventListener("input", function() {
 
-    pesquisa.addEventListener("input", function() {
+    mostrarProdutos();
 
-        const texto = pesquisa.value.toLowerCase();
+});
 
-        const produtosFiltrados = produtos.filter(function(produto) {
+btnAdicionar.addEventListener("click", function() {
 
-            const dados = produto.data || {};
+    produtoEditando = null;
 
-            const nomeProduto =
-                String(dados.name || "").toLowerCase();
+    tituloModal.textContent = "Adicionar produto";
 
-            const categoriaProduto =
-                String(dados.category || "").toLowerCase();
+    formProduto.reset();
 
-            return (
-                nomeProduto.includes(texto) ||
-                categoriaProduto.includes(texto)
-            );
-        });
+    modal.style.display = "flex";
 
-        mostrarProdutos(produtosFiltrados);
-    });
-}
+});
 
-if (btnAdicionar) {
-
-    btnAdicionar.addEventListener("click", function() {
-
-        produtoEditando = null;
-
-        form.reset();
-
-        tituloModal.textContent = "Adicionar produto";
-
-        modal.style.display = "flex";
-    });
-}
-
-if (fecharModal) {
-    fecharModal.addEventListener("click", fecharModalFuncao);
-}
-
-if (cancelar) {
-    cancelar.addEventListener("click", fecharModalFuncao);
-}
-
-function fecharModalFuncao() {
+function fecharModal() {
 
     modal.style.display = "none";
 
-    form.reset();
-
     produtoEditando = null;
+
+    formProduto.reset();
+
 }
 
-if (form) {
+fecharModalBotao.addEventListener("click", fecharModal);
 
-    form.addEventListener("submit", async function(event) {
+cancelar.addEventListener("click", fecharModal);
 
-        event.preventDefault();
+modal.addEventListener("click", function(event) {
 
-        const produto = {
+    if (event.target === modal) {
 
-            data: {
-                name: nome.value,
-                price: Number(preco.value),
-                category: categoria.value,
-                in_stock: estoque.checked
-            }
+        fecharModal();
 
-        };
+    }
 
-        try {
+});
 
-            let resposta;
+formProduto.addEventListener("submit", async function(event) {
 
-            if (produtoEditando === null) {
+    event.preventDefault();
 
-                resposta = await fetch(URL, {
+    const dadosProduto = {
 
-                    method: "POST",
+        name: nome.value,
 
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": API_KEY,
-                        "X-Reqres-Env": "prod"
-                    },
+        category: categoria.value,
 
-                    body: JSON.stringify(produto)
-                });
+        price: Number(preco.value),
 
-            } else {
+        in_stock: estoque.checked
 
-                const url =
-                    `https://reqres.in/api/collections/products/records/${produtoEditando}?project_id=51113`;
+    };
 
-                resposta = await fetch(url, {
+    try {
 
-                    method: "PUT",
+        if (produtoEditando === null) {
 
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": API_KEY,
-                        "X-Reqres-Env": "prod"
-                    },
+            const resposta = await fetch(URL, {
 
-                    body: JSON.stringify(produto)
-                });
-            }
+                method: "POST",
 
-            const dados = await resposta.json();
+                headers: {
+
+                    "Content-Type": "application/json",
+
+                    "x-api-key": API_KEY,
+
+                    "X-Reqres-Env": "prod"
+
+                },
+
+                body: JSON.stringify({
+
+                    data: dadosProduto
+
+                })
+
+            });
 
             if (!resposta.ok) {
-                throw new Error(
-                    dados.message || "Erro ao salvar produto"
-                );
+
+                throw new Error("Erro ao adicionar produto");
+
             }
 
-            alert(
-                produtoEditando === null
-                    ? "Produto adicionado!"
-                    : "Produto editado!"
-            );
+        } else {
 
-            fecharModalFuncao();
+            const urlEditar =
+                `https://reqres.in/api/collections/products/records/${produtoEditando}?project_id=51113`;
 
-            await buscarProdutos();
+            const resposta = await fetch(urlEditar, {
 
-        } catch (erro) {
+                method: "PUT",
 
-            console.error(erro);
+                headers: {
 
-            alert("Erro: " + erro.message);
+                    "Content-Type": "application/json",
+
+                    "x-api-key": API_KEY,
+
+                    "X-Reqres-Env": "prod"
+
+                },
+
+                body: JSON.stringify({
+
+                    data: dadosProduto
+
+                })
+
+            });
+
+            if (!resposta.ok) {
+
+                throw new Error("Erro ao editar produto");
+
+            }
+
         }
-    });
-}
+
+        fecharModal();
+
+        buscarProdutos();
+
+    } catch (erro) {
+
+        console.log(erro);
+
+        alert("Erro ao salvar o produto.");
+
+    }
+
+});
 
 function editarProduto(id) {
 
@@ -273,119 +305,135 @@ function editarProduto(id) {
 
     if (!produto) {
 
-        alert("Produto não encontrado");
-
         return;
+
     }
-
-    const dados = produto.data || {};
-
-    nome.value = dados.name || "";
-
-    categoria.value = dados.category || "";
-
-    preco.value = dados.price || "";
-
-    estoque.checked =
-        dados.in_stock === true ||
-        dados.in_stock === "true";
 
     produtoEditando = id;
 
     tituloModal.textContent = "Editar produto";
 
+    nome.value = produto.data.name;
+
+    categoria.value = produto.data.category;
+
+    preco.value = produto.data.price;
+
+    estoque.checked = produto.data.in_stock;
+
     modal.style.display = "flex";
+
 }
 
 async function excluirProduto(id) {
 
     const confirmar = confirm(
-        "Tem certeza que deseja excluir este produto?"
+        "Deseja excluir este produto?"
     );
 
     if (!confirmar) {
+
         return;
+
     }
+
+    const urlExcluir =
+        `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
 
     try {
 
-        const url =
-            `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
-
-        const resposta = await fetch(url, {
+        const resposta = await fetch(urlExcluir, {
 
             method: "DELETE",
 
             headers: {
+
                 "x-api-key": API_KEY,
+
                 "X-Reqres-Env": "prod"
+
             }
+
         });
 
         if (!resposta.ok) {
 
-            const dados =
-                await resposta.json().catch(function() {
-                    return {};
-                });
+            throw new Error("Erro ao excluir produto");
 
-            throw new Error(
-                dados.message || "Erro ao excluir produto"
-            );
         }
 
-        alert("Produto excluído!");
-
-        await buscarProdutos();
+        buscarProdutos();
 
     } catch (erro) {
 
-        console.error(erro);
+        console.log(erro);
 
-        alert("Erro ao excluir: " + erro.message);
+        alert("Erro ao excluir o produto.");
+
     }
+
 }
 
+function visualizarProduto(id) {
+
+    window.location.href =
+        `./produto-detalhes.html?id=${id}`;
+
+}
 
 const canvas = document.querySelector("#canvas");
+
 const ctx = canvas.getContext("2d");
 
-let mouseX = 0;
-let mouseY = 0;
-
 let pontos = [];
+
+let mouseX = -1000;
+
+let mouseY = -1000;
 
 function ajustarCanvas() {
 
     canvas.width = window.innerWidth;
+
     canvas.height = window.innerHeight;
+
+    pontos = [];
+
+    for (let i = 0; i < 60; i++) {
+
+        pontos.push({
+
+            x: Math.random() * canvas.width,
+
+            y: Math.random() * canvas.height,
+
+            vx: (Math.random() - 0.5) * 0.5,
+
+            vy: (Math.random() - 0.5) * 0.5
+
+        });
+
+    }
+
 }
 
-ajustarCanvas();
+window.addEventListener(
+    "resize",
+    ajustarCanvas
+);
 
-window.addEventListener("resize", ajustarCanvas);
+document.addEventListener(
+    "mousemove",
+    function(event) {
 
-for (let i = 0; i < 60; i++) {
+        mouseX = event.clientX;
 
-    pontos.push({
+        mouseY = event.clientY;
 
-        x: Math.random() * window.innerWidth,
+    }
+);
 
-        y: Math.random() * window.innerHeight,
-
-        vx: (Math.random() - 0.5) * 0.4,
-
-        vy: (Math.random() - 0.5) * 0.4
-    });
-}
-
-document.addEventListener("mousemove", function(event) {
-
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-});
-
-function animarFundo() {
+function animarCanvas() {
 
     ctx.clearRect(
         0,
@@ -397,47 +445,25 @@ function animarFundo() {
     pontos.forEach(function(ponto) {
 
         ponto.x += ponto.vx;
+
         ponto.y += ponto.vy;
 
         if (
             ponto.x < 0 ||
             ponto.x > canvas.width
         ) {
+
             ponto.vx *= -1;
+
         }
 
         if (
             ponto.y < 0 ||
             ponto.y > canvas.height
         ) {
+
             ponto.vy *= -1;
-        }
 
-        const distanciaMouse = Math.sqrt(
-            (ponto.x - mouseX) ** 2 +
-            (ponto.y - mouseY) ** 2
-        );
-
-        if (distanciaMouse < 180) {
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                ponto.x,
-                ponto.y
-            );
-
-            ctx.lineTo(
-                mouseX,
-                mouseY
-            );
-
-            ctx.strokeStyle =
-                "rgba(37, 99, 235, 0.18)";
-
-            ctx.lineWidth = 1;
-
-            ctx.stroke();
         }
 
         ctx.beginPath();
@@ -454,16 +480,31 @@ function animarFundo() {
             "rgba(37, 99, 235, 0.35)";
 
         ctx.fill();
+
     });
 
-    for (let i = 0; i < pontos.length; i++) {
+    for (
+        let i = 0;
+        i < pontos.length;
+        i++
+    ) {
 
-        for (let j = i + 1; j < pontos.length; j++) {
+        for (
+            let j = i + 1;
+            j < pontos.length;
+            j++
+        ) {
 
-            const distancia = Math.sqrt(
-                (pontos[i].x - pontos[j].x) ** 2 +
-                (pontos[i].y - pontos[j].y) ** 2
-            );
+            const dx =
+                pontos[i].x - pontos[j].x;
+
+            const dy =
+                pontos[i].y - pontos[j].y;
+
+            const distancia =
+                Math.sqrt(
+                    dx * dx + dy * dy
+                );
 
             if (distancia < 110) {
 
@@ -480,18 +521,63 @@ function animarFundo() {
                 );
 
                 ctx.strokeStyle =
-                    "rgba(4, 79, 240, 0.18)";
+                    "rgba(37, 99, 235, 0.18)";
 
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 0.2;
 
                 ctx.stroke();
+
             }
+
         }
+
     }
 
-    requestAnimationFrame(animarFundo);
+    pontos.forEach(function(ponto) {
+
+        const dx =
+            ponto.x - mouseX;
+
+        const dy =
+            ponto.y - mouseY;
+
+        const distancia =
+            Math.sqrt(
+                dx * dx + dy * dy
+            );
+
+        if (distancia < 180) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                ponto.x,
+                ponto.y
+            );
+
+            ctx.lineTo(
+                mouseX,
+                mouseY
+            );
+
+            ctx.strokeStyle =
+                "rgba(37, 99, 235, 0.5)";
+
+            ctx.lineWidth = 1.5;
+
+            ctx.stroke();
+
+        }
+
+    });
+
+    requestAnimationFrame(animarCanvas);
+
 }
 
-animarFundo();
+ajustarCanvas();
+
+animarCanvas();
 
 buscarProdutos();
+

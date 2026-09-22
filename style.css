@@ -163,29 +163,48 @@ tbody tr:hover {
 }
 
 .btn-editar,
-.btn-excluir {
+.btn-excluir,
+.btn-visualizar {
+
     border: none;
+
     padding: 7px 11px;
+
     border-radius: 5px;
+
     cursor: pointer;
+
     font-size: 12px;
+
     transition: 0.2s ease;
+
 }
 
 .btn-editar:hover,
-.btn-excluir:hover {
+.btn-excluir:hover,
+.btn-visualizar:hover {
+
     transform: translateY(-1px);
+
     opacity: 0.8;
+
 }
 
-.btn-editar {
+.btn-editar,
+.btn-visualizar {
+
     background: #eff6ff;
+
     color: #2563eb;
+
 }
 
 .btn-excluir {
+
     background: #fef2f2;
+
     color: #dc2626;
+
 }
 
 .modal {
