@@ -33,13 +33,7 @@ async function buscarProdutos() {
 
         const dados = await resposta.json();
 
-        console.log("API:", dados);
-
-        if (!resposta.ok) {
-            throw new Error(dados.message || "Erro na API");
-        }
-
-        produtos = dados.data || [];
+        produtos = dados.data ;
 
         mostrarProdutos(produtos);
 
@@ -235,14 +229,6 @@ if (form) {
 
             const dados = await resposta.json();
 
-            console.log("RESPOSTA:", dados);
-
-            if (!resposta.ok) {
-                throw new Error(
-                    dados.message || "Erro ao salvar produto"
-                );
-            }
-
             alert(
                 produtoEditando === null
                     ? "Produto adicionado!"
@@ -339,3 +325,17 @@ async function excluirProduto(id) {
 }
 
 buscarProdutos();
+
+document.addEventListener("mousemove", function (event) {
+
+    document.body.style.setProperty(
+        "--mouse-x",
+        event.clientX + "px"
+    );
+
+    document.body.style.setProperty(
+        "--mouse-y",
+        event.clientY + "px"
+    );
+
+});
