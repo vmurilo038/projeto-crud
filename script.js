@@ -22,7 +22,9 @@ const fecharModal = document.querySelector("#fecharModal");
 const cancelar = document.querySelector("#cancelar");
 
 async function buscarProdutos() {
+
     try {
+
         const resposta = await fetch(URL, {
             method: "GET",
             headers: {
@@ -33,11 +35,12 @@ async function buscarProdutos() {
 
         const dados = await resposta.json();
 
-        produtos = dados.data ;
+        produtos = dados.data;
 
         mostrarProdutos(produtos);
 
     } catch (erro) {
+
         console.error("ERRO:", erro);
 
         lista.innerHTML = `
@@ -51,9 +54,11 @@ async function buscarProdutos() {
 }
 
 function mostrarProdutos(listaProdutos) {
+
     lista.innerHTML = "";
 
     if (listaProdutos.length === 0) {
+
         lista.innerHTML = `
             <tr>
                 <td colspan="6">
@@ -61,6 +66,7 @@ function mostrarProdutos(listaProdutos) {
                 </td>
             </tr>
         `;
+
         return;
     }
 
@@ -94,19 +100,23 @@ function mostrarProdutos(listaProdutos) {
             </td>
 
             <td>
+
                 <button
                     type="button"
                     class="btn-editar"
-                    onclick="editarProduto('${produto.id}')">
+                    onclick="editarProduto('${produto.id}')"
+                >
                     Editar
                 </button>
 
                 <button
                     type="button"
                     class="btn-excluir"
-                    onclick="excluirProduto('${produto.id}')">
+                    onclick="excluirProduto('${produto.id}')"
+                >
                     Excluir
                 </button>
+
             </td>
         `;
 
@@ -115,6 +125,7 @@ function mostrarProdutos(listaProdutos) {
 }
 
 if (pesquisa) {
+
     pesquisa.addEventListener("input", function() {
 
         const texto = pesquisa.value.toLowerCase();
@@ -140,21 +151,16 @@ if (pesquisa) {
 }
 
 if (btnAdicionar) {
+
     btnAdicionar.addEventListener("click", function() {
 
         produtoEditando = null;
 
-        if (form) {
-            form.reset();
-        }
+        form.reset();
 
-        if (tituloModal) {
-            tituloModal.textContent = "Adicionar produto";
-        }
+        tituloModal.textContent = "Adicionar produto";
 
-        if (modal) {
-            modal.style.display = "flex";
-        }
+        modal.style.display = "flex";
     });
 }
 
@@ -168,13 +174,9 @@ if (cancelar) {
 
 function fecharModalFuncao() {
 
-    if (modal) {
-        modal.style.display = "none";
-    }
+    modal.style.display = "none";
 
-    if (form) {
-        form.reset();
-    }
+    form.reset();
 
     produtoEditando = null;
 }
@@ -185,14 +187,15 @@ if (form) {
 
         event.preventDefault();
 
-        
         const produto = {
+
             data: {
                 name: nome.value,
                 price: Number(preco.value),
                 category: categoria.value,
                 in_stock: estoque.checked
             }
+
         };
 
         try {
@@ -202,12 +205,15 @@ if (form) {
             if (produtoEditando === null) {
 
                 resposta = await fetch(URL, {
+
                     method: "POST",
+
                     headers: {
                         "Content-Type": "application/json",
                         "x-api-key": API_KEY,
                         "X-Reqres-Env": "prod"
                     },
+
                     body: JSON.stringify(produto)
                 });
 
@@ -217,17 +223,26 @@ if (form) {
                     `https://reqres.in/api/collections/products/records/${produtoEditando}?project_id=51113`;
 
                 resposta = await fetch(url, {
+
                     method: "PUT",
+
                     headers: {
                         "Content-Type": "application/json",
                         "x-api-key": API_KEY,
                         "X-Reqres-Env": "prod"
                     },
+
                     body: JSON.stringify(produto)
                 });
             }
 
             const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(
+                    dados.message || "Erro ao salvar produto"
+                );
+            }
 
             alert(
                 produtoEditando === null
@@ -251,18 +266,24 @@ if (form) {
 function editarProduto(id) {
 
     const produto = produtos.find(function(item) {
+
         return item.id === id;
+
     });
 
     if (!produto) {
+
         alert("Produto não encontrado");
+
         return;
     }
 
     const dados = produto.data || {};
 
     nome.value = dados.name || "";
+
     categoria.value = dados.category || "";
+
     preco.value = dados.price || "";
 
     estoque.checked =
@@ -271,13 +292,9 @@ function editarProduto(id) {
 
     produtoEditando = id;
 
-    if (tituloModal) {
-        tituloModal.textContent = "Editar produto";
-    }
+    tituloModal.textContent = "Editar produto";
 
-    if (modal) {
-        modal.style.display = "flex";
-    }
+    modal.style.display = "flex";
 }
 
 async function excluirProduto(id) {
@@ -296,7 +313,9 @@ async function excluirProduto(id) {
             `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
 
         const resposta = await fetch(url, {
+
             method: "DELETE",
+
             headers: {
                 "x-api-key": API_KEY,
                 "X-Reqres-Env": "prod"
@@ -305,7 +324,10 @@ async function excluirProduto(id) {
 
         if (!resposta.ok) {
 
-            const dados = await resposta.json().catch(() => ({}));
+            const dados =
+                await resposta.json().catch(function() {
+                    return {};
+                });
 
             throw new Error(
                 dados.message || "Erro ao excluir produto"
@@ -324,18 +346,152 @@ async function excluirProduto(id) {
     }
 }
 
-buscarProdutos();
 
-document.addEventListener("mousemove", function (event) {
+const canvas = document.querySelector("#canvas");
+const ctx = canvas.getContext("2d");
 
-    document.body.style.setProperty(
-        "--mouse-x",
-        event.clientX + "px"
-    );
+let mouseX = 0;
+let mouseY = 0;
 
-    document.body.style.setProperty(
-        "--mouse-y",
-        event.clientY + "px"
-    );
+let pontos = [];
 
+function ajustarCanvas() {
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+ajustarCanvas();
+
+window.addEventListener("resize", ajustarCanvas);
+
+for (let i = 0; i < 60; i++) {
+
+    pontos.push({
+
+        x: Math.random() * window.innerWidth,
+
+        y: Math.random() * window.innerHeight,
+
+        vx: (Math.random() - 0.5) * 0.4,
+
+        vy: (Math.random() - 0.5) * 0.4
+    });
+}
+
+document.addEventListener("mousemove", function(event) {
+
+    mouseX = event.clientX;
+    mouseY = event.clientY;
 });
+
+function animarFundo() {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    pontos.forEach(function(ponto) {
+
+        ponto.x += ponto.vx;
+        ponto.y += ponto.vy;
+
+        if (
+            ponto.x < 0 ||
+            ponto.x > canvas.width
+        ) {
+            ponto.vx *= -1;
+        }
+
+        if (
+            ponto.y < 0 ||
+            ponto.y > canvas.height
+        ) {
+            ponto.vy *= -1;
+        }
+
+        const distanciaMouse = Math.sqrt(
+            (ponto.x - mouseX) ** 2 +
+            (ponto.y - mouseY) ** 2
+        );
+
+        if (distanciaMouse < 180) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                ponto.x,
+                ponto.y
+            );
+
+            ctx.lineTo(
+                mouseX,
+                mouseY
+            );
+
+            ctx.strokeStyle =
+                "rgba(37, 99, 235, 0.18)";
+
+            ctx.lineWidth = 1;
+
+            ctx.stroke();
+        }
+
+        ctx.beginPath();
+
+        ctx.arc(
+            ponto.x,
+            ponto.y,
+            2,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            "rgba(37, 99, 235, 0.35)";
+
+        ctx.fill();
+    });
+
+    for (let i = 0; i < pontos.length; i++) {
+
+        for (let j = i + 1; j < pontos.length; j++) {
+
+            const distancia = Math.sqrt(
+                (pontos[i].x - pontos[j].x) ** 2 +
+                (pontos[i].y - pontos[j].y) ** 2
+            );
+
+            if (distancia < 110) {
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    pontos[i].x,
+                    pontos[i].y
+                );
+
+                ctx.lineTo(
+                    pontos[j].x,
+                    pontos[j].y
+                );
+
+                ctx.strokeStyle =
+                    "rgba(4, 79, 240, 0.18)";
+
+                ctx.lineWidth = 1;
+
+                ctx.stroke();
+            }
+        }
+    }
+
+    requestAnimationFrame(animarFundo);
+}
+
+animarFundo();
+
+buscarProdutos();
