@@ -40,10 +40,17 @@ body {
     border-radius: 7px;
     font-size: 14px;
     cursor: pointer;
+    transition: 0.3s ease;
 }
 
 .btn-adicionar:hover {
     background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.25);
+}
+
+.btn-adicionar:active {
+    transform: translateY(0);
 }
 
 .barra {
@@ -101,6 +108,10 @@ td {
     font-size: 14px;
 }
 
+tbody tr {
+    transition: 0.3s ease;
+}
+
 tbody tr:hover {
     background: #fafafa;
 }
@@ -111,6 +122,10 @@ tbody tr:hover {
 
 .categoria {
     color: #64748b;
+}
+
+.preco {
+    font-weight: 600;
 }
 
 .estoque {
@@ -131,10 +146,6 @@ tbody tr:hover {
     color: #dc2626;
 }
 
-.preco {
-    font-weight: 600;
-}
-
 .acoes {
     display: flex;
     gap: 8px;
@@ -147,6 +158,13 @@ tbody tr:hover {
     border-radius: 5px;
     cursor: pointer;
     font-size: 12px;
+    transition: 0.2s ease;
+}
+
+.btn-editar:hover,
+.btn-excluir:hover {
+    transform: translateY(-1px);
+    opacity: 0.8;
 }
 
 .btn-editar {
@@ -167,10 +185,17 @@ tbody tr:hover {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    z-index: 999;
 }
 
 .modal.ativo {
     display: flex;
+    animation: aparecerFundo 0.25s ease forwards;
+}
+
+.modal.fechando {
+    display: flex;
+    animation: desaparecerFundo 0.2s ease forwards;
 }
 
 .modal-conteudo {
@@ -179,6 +204,56 @@ tbody tr:hover {
     background: white;
     border-radius: 10px;
     padding: 25px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    animation: abrirModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal.fechando .modal-conteudo {
+    animation: fecharModal 0.2s ease forwards;
+}
+
+@keyframes aparecerFundo {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes desaparecerFundo {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes abrirModal {
+    from {
+        opacity: 0;
+        transform: translateY(-35px) scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fecharModal {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.96);
+    }
 }
 
 .modal-topo {
@@ -198,6 +273,16 @@ tbody tr:hover {
     font-size: 28px;
     cursor: pointer;
     color: #64748b;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    transition: 0.2s ease;
+}
+
+.fechar:hover {
+    background: #f1f5f9;
+    color: #1f2937;
+    transform: rotate(90deg);
 }
 
 form {
@@ -218,10 +303,13 @@ form input[type="number"] {
     border-radius: 6px;
     outline: none;
     margin-bottom: 18px;
+    transition: 0.2s ease;
 }
 
-form input:focus {
+form input[type="text"]:focus,
+form input[type="number"]:focus {
     border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .checkbox {
@@ -234,6 +322,7 @@ form input:focus {
 .checkbox input {
     width: 16px;
     height: 16px;
+    cursor: pointer;
 }
 
 .botoes-form {
@@ -248,6 +337,7 @@ form input:focus {
     padding: 10px 18px;
     border-radius: 6px;
     cursor: pointer;
+    transition: 0.2s ease;
 }
 
 .btn-cancelar {
@@ -255,17 +345,29 @@ form input:focus {
     color: #374151;
 }
 
+.btn-cancelar:hover {
+    background: #d1d5db;
+}
+
 .btn-salvar {
     background: #2563eb;
     color: white;
 }
 
-@media (max-width: 700px) {
+.btn-salvar:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
 
+@media (max-width: 700px) {
     .topo {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+    }
+
+    .btn-adicionar {
+        width: 100%;
     }
 
     .busca {
@@ -277,4 +379,40 @@ form input:focus {
         padding: 12px;
     }
 
+    .modal-conteudo {
+        padding: 20px;
+        max-width: 100%;
+    }
 }
+
+body {
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+    background: #f5f7fb;
+    overflow-x: hidden;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    left: var(--mouse-x, 50%);
+    top: var(--mouse-y, 50%);
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        circle,
+        rgba(37, 99, 235, 0.22) 0%,
+        rgba(99, 102, 241, 0.12) 25%,
+        rgba(139, 92, 246, 0.06) 45%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(10px);
+    transition:
+        left 0.25s ease-out,
+        top 0.25s ease-out;
+}
+
