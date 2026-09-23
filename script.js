@@ -1,13 +1,18 @@
+
 const API_KEY = "pro_9198188f7fe0f06cdc6ffaec77b61ac26652a459595f16d76435cbeab60c551e";
 
 const URL = "https://reqres.in/api/collections/products/records?project_id=51113";
 
 let produtos = [];
 let produtoEditando = null;
+let produtoParaExcluir = null;
+let produtoExcluido = null;
+let dadosOriginais = null;
 
 const listaProdutos = document.querySelector("#listaProdutos");
 const pesquisa = document.querySelector("#pesquisa");
 const btnAdicionar = document.querySelector("#btnAdicionar");
+const btnTema = document.querySelector("#btnTema");
 
 const modal = document.querySelector("#modal");
 const tituloModal = document.querySelector("#tituloModal");
@@ -19,6 +24,42 @@ const nome = document.querySelector("#nome");
 const categoria = document.querySelector("#categoria");
 const preco = document.querySelector("#preco");
 const estoque = document.querySelector("#estoque");
+
+const modalExcluir = document.querySelector("#modalExcluir");
+const mensagemExcluir = document.querySelector("#mensagemExcluir");
+const cancelarExclusao = document.querySelector("#cancelarExclusao");
+const confirmarExclusao = document.querySelector("#confirmarExclusao");
+
+const notificacao = document.querySelector("#notificacao");
+const textoNotificacao = document.querySelector("#textoNotificacao");
+const desfazer = document.querySelector("#desfazer");
+
+const modalAlteracoes = document.querySelector("#modalAlteracoes");
+const continuarEditando = document.querySelector("#continuarEditando");
+const sairSemSalvar = document.querySelector("#sairSemSalvar");
+
+let tempoNotificacao;
+
+
+function mostrarNotificacao(mensagem, mostrarDesfazer = false) {
+
+    clearTimeout(tempoNotificacao);
+
+    textoNotificacao.textContent = mensagem;
+
+    if (mostrarDesfazer) {
+        desfazer.style.display = "block";
+    } else {
+        desfazer.style.display = "none";
+    }
+
+    notificacao.classList.add("ativa");
+
+    tempoNotificacao = setTimeout(function() {
+        notificacao.classList.remove("ativa");
+    }, 4000);
+}
+
 
 async function buscarProdutos() {
 
@@ -39,7 +80,7 @@ async function buscarProdutos() {
 
         const dados = await resposta.json();
 
-        produtos = dados.data;
+        produtos = dados.data || [];
 
         mostrarProdutos();
 
@@ -54,10 +95,9 @@ async function buscarProdutos() {
                 </td>
             </tr>
         `;
-
     }
-
 }
+
 
 function mostrarProdutos() {
 
@@ -69,17 +109,18 @@ function mostrarProdutos() {
 
         const dados = produto.data;
 
-        return dados.name.toLowerCase().includes(textoPesquisa);
+        return dados.name
+            .toLowerCase()
+            .includes(textoPesquisa);
 
     });
+
 
     produtosFiltrados.forEach(function(produto, index) {
 
         const dados = produto.data;
 
         const linha = document.createElement("tr");
-
-        linha.style.animationDelay = (index * 0.05) + "s";
 
         let statusEstoque = "";
 
@@ -101,8 +142,12 @@ function mostrarProdutos() {
 
         }
 
+
         linha.innerHTML = `
-            <td>${index + 1}</td>
+
+            <td>
+                ${index + 1}
+            </td>
 
             <td class="nome">
                 ${dados.name}
@@ -117,7 +162,12 @@ function mostrarProdutos() {
             </td>
 
             <td class="preco">
-                R$ ${Number(dados.price).toFixed(2)}
+                R$ ${Number(dados.price).toLocaleString(
+                    "pt-BR",
+                    {
+                        minimumFractionDigits: 2
+                    }
+                )}
             </td>
 
             <td>
@@ -148,13 +198,14 @@ function mostrarProdutos() {
                 </div>
 
             </td>
+
         `;
 
         listaProdutos.appendChild(linha);
 
     });
-
 }
+
 
 pesquisa.addEventListener("input", function() {
 
@@ -162,9 +213,12 @@ pesquisa.addEventListener("input", function() {
 
 });
 
+
 btnAdicionar.addEventListener("click", function() {
 
     produtoEditando = null;
+
+    dadosOriginais = null;
 
     tituloModal.textContent = "Adicionar produto";
 
@@ -174,45 +228,200 @@ btnAdicionar.addEventListener("click", function() {
 
 });
 
+
 function fecharModal() {
 
     modal.style.display = "none";
 
     produtoEditando = null;
 
+    dadosOriginais = null;
+
     formProduto.reset();
 
 }
 
-fecharModalBotao.addEventListener("click", fecharModal);
 
-cancelar.addEventListener("click", fecharModal);
+function tentarFecharModal() {
+
+    if (produtoEditando !== null) {
+
+        const dadosAtuais = {
+
+            name: nome.value.trim(),
+
+            category: categoria.value.trim(),
+
+            price: Number(preco.value),
+
+            in_stock: estoque.checked
+
+        };
+
+        const houveAlteracao =
+            JSON.stringify(dadosAtuais) !==
+            JSON.stringify(dadosOriginais);
+
+
+        if (houveAlteracao) {
+
+            modalAlteracoes.classList.add("ativo");
+
+            return;
+
+        }
+
+    }
+
+    fecharModal();
+
+}
+
+
+fecharModalBotao.addEventListener(
+    "click",
+    tentarFecharModal
+);
+
+
+cancelar.addEventListener(
+    "click",
+    tentarFecharModal
+);
+
 
 modal.addEventListener("click", function(event) {
 
     if (event.target === modal) {
+        tentarFecharModal();
+    }
+
+});
+
+
+continuarEditando.addEventListener(
+    "click",
+    function() {
+
+        modalAlteracoes.classList.remove("ativo");
+
+    }
+);
+
+
+sairSemSalvar.addEventListener(
+    "click",
+    function() {
+
+        modalAlteracoes.classList.remove("ativo");
 
         fecharModal();
 
     }
+);
 
-});
+
+modalAlteracoes.addEventListener(
+    "click",
+    function(event) {
+
+        if (event.target === modalAlteracoes) {
+
+            modalAlteracoes.classList.remove("ativo");
+
+        }
+
+    }
+);
+
 
 formProduto.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
+    const nomeProduto = nome.value.trim();
+
+    const categoriaProduto = categoria.value.trim();
+
+    const precoProduto = preco.value;
+
+
+    if (nomeProduto === "") {
+
+        mostrarNotificacao(
+            "Digite o nome do produto."
+        );
+
+        nome.focus();
+
+        return;
+    }
+
+
+    if (nomeProduto.length < 3) {
+
+        mostrarNotificacao(
+            "O nome deve ter pelo menos 3 caracteres."
+        );
+
+        nome.focus();
+
+        return;
+    }
+
+
+    if (categoriaProduto === "") {
+
+        mostrarNotificacao(
+            "Digite a categoria do produto."
+        );
+
+        categoria.focus();
+
+        return;
+    }
+
+
+    if (precoProduto === "") {
+
+        mostrarNotificacao(
+            "Digite o preço do produto."
+        );
+
+        preco.focus();
+
+        return;
+    }
+
+
+    if (Number(precoProduto) < 0) {
+
+        mostrarNotificacao(
+            "O preço não pode ser negativo."
+        );
+
+        preco.focus();
+
+        return;
+    }
+
+
+    const estavaEditando =
+        produtoEditando !== null;
+
+
     const dadosProduto = {
 
-        name: nome.value,
+        name: nomeProduto,
 
-        category: categoria.value,
+        category: categoriaProduto,
 
-        price: Number(preco.value),
+        price: Number(precoProduto),
 
         in_stock: estoque.checked
 
     };
+
 
     try {
 
@@ -224,11 +433,14 @@ formProduto.addEventListener("submit", async function(event) {
 
                 headers: {
 
-                    "Content-Type": "application/json",
+                    "Content-Type":
+                        "application/json",
 
-                    "x-api-key": API_KEY,
+                    "x-api-key":
+                        API_KEY,
 
-                    "X-Reqres-Env": "prod"
+                    "X-Reqres-Env":
+                        "prod"
 
                 },
 
@@ -240,9 +452,12 @@ formProduto.addEventListener("submit", async function(event) {
 
             });
 
+
             if (!resposta.ok) {
 
-                throw new Error("Erro ao adicionar produto");
+                throw new Error(
+                    "Erro ao adicionar produto"
+                );
 
             }
 
@@ -251,49 +466,80 @@ formProduto.addEventListener("submit", async function(event) {
             const urlEditar =
                 `https://reqres.in/api/collections/products/records/${produtoEditando}?project_id=51113`;
 
-            const resposta = await fetch(urlEditar, {
 
-                method: "PUT",
+            const resposta = await fetch(
+                urlEditar,
+                {
 
-                headers: {
+                    method: "PUT",
 
-                    "Content-Type": "application/json",
+                    headers: {
 
-                    "x-api-key": API_KEY,
+                        "Content-Type":
+                            "application/json",
 
-                    "X-Reqres-Env": "prod"
+                        "x-api-key":
+                            API_KEY,
 
-                },
+                        "X-Reqres-Env":
+                            "prod"
 
-                body: JSON.stringify({
+                    },
 
-                    data: dadosProduto
+                    body: JSON.stringify({
 
-                })
+                        data: dadosProduto
 
-            });
+                    })
+
+                }
+            );
+
 
             if (!resposta.ok) {
 
-                throw new Error("Erro ao editar produto");
+                throw new Error(
+                    "Erro ao editar produto"
+                );
 
             }
 
         }
 
+
         fecharModal();
 
+
+        if (estavaEditando) {
+
+            mostrarNotificacao(
+                "Produto editado com sucesso!"
+            );
+
+        } else {
+
+            mostrarNotificacao(
+                "Produto adicionado com sucesso!"
+            );
+
+        }
+
+
         buscarProdutos();
+
 
     } catch (erro) {
 
         console.log(erro);
 
-        alert("Erro ao salvar o produto.");
+        mostrarNotificacao(
+            "Erro ao salvar o produto."
+        );
 
     }
 
 });
+
 
 function editarProduto(id) {
 
@@ -303,87 +549,389 @@ function editarProduto(id) {
 
     });
 
+
     if (!produto) {
-
         return;
-
     }
+
 
     produtoEditando = id;
 
     tituloModal.textContent = "Editar produto";
 
-    nome.value = produto.data.name;
 
-    categoria.value = produto.data.category;
+    nome.value =
+        produto.data.name;
 
-    preco.value = produto.data.price;
+    categoria.value =
+        produto.data.category;
 
-    estoque.checked = produto.data.in_stock;
+    preco.value =
+        produto.data.price;
+
+    estoque.checked =
+        produto.data.in_stock;
+
+
+    dadosOriginais = {
+
+        name:
+            produto.data.name,
+
+        category:
+            produto.data.category,
+
+        price:
+            Number(produto.data.price),
+
+        in_stock:
+            produto.data.in_stock
+
+    };
+
 
     modal.style.display = "flex";
 
 }
 
-async function excluirProduto(id) {
 
-    const confirmar = confirm(
-        "Deseja excluir este produto?"
-    );
+function excluirProduto(id) {
 
-    if (!confirmar) {
+    produtoParaExcluir = id;
 
-        return;
+
+    const produto = produtos.find(function(item) {
+
+        return item.id === id;
+
+    });
+
+
+    if (produto) {
+
+        mensagemExcluir.textContent =
+            `Deseja excluir "${produto.data.name}"?`;
 
     }
 
-    const urlExcluir =
-        `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
 
-    try {
+    modalExcluir.classList.add("ativo");
 
-        const resposta = await fetch(urlExcluir, {
+}
 
-            method: "DELETE",
 
-            headers: {
+function fecharModalExclusao() {
 
-                "x-api-key": API_KEY,
+    modalExcluir.classList.remove("ativo");
 
-                "X-Reqres-Env": "prod"
+    produtoParaExcluir = null;
 
-            }
+}
+
+
+cancelarExclusao.addEventListener(
+    "click",
+    fecharModalExclusao
+);
+
+
+modalExcluir.addEventListener("click", function(event) {
+
+    if (event.target === modalExcluir) {
+        fecharModalExclusao();
+    }
+
+});
+
+
+confirmarExclusao.addEventListener(
+    "click",
+    async function() {
+
+        if (!produtoParaExcluir) {
+            return;
+        }
+
+
+        const id = produtoParaExcluir;
+
+
+        const produto = produtos.find(function(item) {
+
+            return item.id === id;
 
         });
 
-        if (!resposta.ok) {
 
-            throw new Error("Erro ao excluir produto");
+        if (!produto) {
+            return;
+        }
+
+
+        produtoExcluido = {
+
+            name:
+                produto.data.name,
+
+            category:
+                produto.data.category,
+
+            price:
+                Number(produto.data.price),
+
+            in_stock:
+                produto.data.in_stock
+
+        };
+
+
+        const urlExcluir =
+            `https://reqres.in/api/collections/products/records/${id}?project_id=51113`;
+
+
+        try {
+
+            confirmarExclusao.disabled = true;
+
+
+            const resposta = await fetch(
+                urlExcluir,
+                {
+
+                    method: "DELETE",
+
+                    headers: {
+
+                        "x-api-key":
+                            API_KEY,
+
+                        "X-Reqres-Env":
+                            "prod"
+
+                    }
+
+                }
+            );
+
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    "Erro ao excluir produto"
+                );
+
+            }
+
+
+            fecharModalExclusao();
+
+
+            mostrarNotificacao(
+                "Produto excluído.",
+                true
+            );
+
+
+            buscarProdutos();
+
+
+        } catch (erro) {
+
+            console.log(erro);
+
+            mostrarNotificacao(
+                "Erro ao excluir o produto."
+            );
+
+
+        } finally {
+
+            confirmarExclusao.disabled = false;
 
         }
 
-        buscarProdutos();
+    }
+);
 
-    } catch (erro) {
 
-        console.log(erro);
+desfazer.addEventListener(
+    "click",
+    async function() {
 
-        alert("Erro ao excluir o produto.");
+        if (!produtoExcluido) {
+            return;
+        }
+
+
+        try {
+
+            const resposta = await fetch(
+                URL,
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "x-api-key":
+                            API_KEY,
+
+                        "X-Reqres-Env":
+                            "prod"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        data:
+                            produtoExcluido
+
+                    })
+
+                }
+            );
+
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    "Erro ao restaurar produto"
+                );
+
+            }
+
+
+            produtoExcluido = null;
+
+
+            notificacao.classList.remove(
+                "ativa"
+            );
+
+
+            mostrarNotificacao(
+                "Produto restaurado com sucesso!"
+            );
+
+
+            buscarProdutos();
+
+
+        } catch (erro) {
+
+            console.log(erro);
+
+            mostrarNotificacao(
+                "Não foi possível restaurar o produto."
+            );
+
+        }
+
+    }
+);
+
+
+/* MODO ESCURO */
+
+if (localStorage.getItem("modoEscuro") === "true") {
+
+    document.body.classList.add("dark");
+
+    btnTema.textContent = "☀️";
+
+}
+
+
+btnTema.addEventListener("click", function() {
+
+    document.body.classList.toggle("dark");
+
+
+    if (document.body.classList.contains("dark")) {
+
+        localStorage.setItem(
+            "modoEscuro",
+            "true"
+        );
+
+        btnTema.textContent = "☀️";
+
+    } else {
+
+        localStorage.setItem(
+            "modoEscuro",
+            "false"
+        );
+
+        btnTema.textContent = "🌙";
 
     }
 
-}
+});
+
 
 function visualizarProduto(id) {
 
     window.location.href =
-        `./produto-detalhes.html?id=${id}`;
+        `produto-detalhes.html?id=${id}`;
 
 }
 
-const canvas = document.querySelector("#canvas");
 
-const ctx = canvas.getContext("2d");
+/* AVISO DE ALTERAÇÕES */
+
+window.addEventListener(
+    "beforeunload",
+    function(event) {
+
+        if (produtoEditando !== null) {
+
+            const dadosAtuais = {
+
+                name:
+                    nome.value.trim(),
+
+                category:
+                    categoria.value.trim(),
+
+                price:
+                    Number(preco.value),
+
+                in_stock:
+                    estoque.checked
+
+            };
+
+
+            const houveAlteracao =
+                JSON.stringify(dadosAtuais) !==
+                JSON.stringify(dadosOriginais);
+
+
+            if (houveAlteracao) {
+
+                event.preventDefault();
+
+                event.returnValue = "";
+
+            }
+
+        }
+
+    }
+);
+
+
+/* CANVAS */
+
+const canvas =
+    document.querySelector("#canvas");
+
+const ctx =
+    canvas.getContext("2d");
 
 let pontos = [];
 
@@ -391,25 +939,37 @@ let mouseX = -1000;
 
 let mouseY = -1000;
 
+
 function ajustarCanvas() {
 
-    canvas.width = window.innerWidth;
+    canvas.width =
+        window.innerWidth;
 
-    canvas.height = window.innerHeight;
+    canvas.height =
+        window.innerHeight;
 
     pontos = [];
+
 
     for (let i = 0; i < 60; i++) {
 
         pontos.push({
 
-            x: Math.random() * canvas.width,
+            x:
+                Math.random() *
+                canvas.width,
 
-            y: Math.random() * canvas.height,
+            y:
+                Math.random() *
+                canvas.height,
 
-            vx: (Math.random() - 0.5) * 0.5,
+            vx:
+                (Math.random() - 0.5) *
+                0.5,
 
-            vy: (Math.random() - 0.5) * 0.5
+            vy:
+                (Math.random() - 0.5) *
+                0.5
 
         });
 
@@ -417,21 +977,26 @@ function ajustarCanvas() {
 
 }
 
+
 window.addEventListener(
     "resize",
     ajustarCanvas
 );
 
+
 document.addEventListener(
     "mousemove",
     function(event) {
 
-        mouseX = event.clientX;
+        mouseX =
+            event.clientX;
 
-        mouseY = event.clientY;
+        mouseY =
+            event.clientY;
 
     }
 );
+
 
 function animarCanvas() {
 
@@ -442,11 +1007,13 @@ function animarCanvas() {
         canvas.height
     );
 
+
     pontos.forEach(function(ponto) {
 
         ponto.x += ponto.vx;
 
         ponto.y += ponto.vy;
+
 
         if (
             ponto.x < 0 ||
@@ -457,6 +1024,7 @@ function animarCanvas() {
 
         }
 
+
         if (
             ponto.y < 0 ||
             ponto.y > canvas.height
@@ -465,6 +1033,7 @@ function animarCanvas() {
             ponto.vy *= -1;
 
         }
+
 
         ctx.beginPath();
 
@@ -483,6 +1052,7 @@ function animarCanvas() {
 
     });
 
+
     for (
         let i = 0;
         i < pontos.length;
@@ -496,15 +1066,19 @@ function animarCanvas() {
         ) {
 
             const dx =
-                pontos[i].x - pontos[j].x;
+                pontos[i].x -
+                pontos[j].x;
 
             const dy =
-                pontos[i].y - pontos[j].y;
+                pontos[i].y -
+                pontos[j].y;
 
             const distancia =
                 Math.sqrt(
-                    dx * dx + dy * dy
+                    dx * dx +
+                    dy * dy
                 );
+
 
             if (distancia < 110) {
 
@@ -533,6 +1107,7 @@ function animarCanvas() {
 
     }
 
+
     pontos.forEach(function(ponto) {
 
         const dx =
@@ -543,8 +1118,10 @@ function animarCanvas() {
 
         const distancia =
             Math.sqrt(
-                dx * dx + dy * dy
+                dx * dx +
+                dy * dy
             );
+
 
         if (distancia < 180) {
 
@@ -571,9 +1148,13 @@ function animarCanvas() {
 
     });
 
-    requestAnimationFrame(animarCanvas);
+
+    requestAnimationFrame(
+        animarCanvas
+    );
 
 }
+
 
 ajustarCanvas();
 
