@@ -1,171 +1,291 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Produtos</title>
-
-<link rel="stylesheet" href="style.css">
-
+    <title>Produtos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<canvas id="canvas"></canvas>
+    <canvas id="canvas"></canvas>
 
-<main class="container">
+    <main class="container">
 
-    <div class="topo">
+        <div class="topo">
 
-        <div>
-            <h1>Produtos</h1>
-            <p>Gerencie seus produtos</p>
-        </div>
+            <div>
+                <h1>Produtos</h1>
+                <p>Gerencie seus produtos</p>
+            </div>
 
-        <button type="button" id="btnAdicionar" class="btn-adicionar">
-            + Adicionar produto
-        </button>
-
-    </div>
-
-    <div class="barra">
-
-        <div class="busca">
-            🔍
-            <input
-                type="text"
-                id="pesquisa"
-                placeholder="Pesquisar..."
-            >
-        </div>
-
-    </div>
-
-    <div class="tabela-container">
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>Categoria</th>
-                    <th>Estoque</th>
-                    <th>Preço</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-
-            <tbody id="listaProdutos"></tbody>
-
-        </table>
-
-    </div>
-
-</main>
-
-
-<div id="modal" class="modal">
-
-    <div class="modal-conteudo">
-
-        <div class="modal-topo">
-
-            <h2 id="tituloModal">
-                Adicionar produto
-            </h2>
-
-            <button
-                type="button"
-                id="fecharModal"
-                class="fechar"
-            >
-                ×
-            </button>
-
-        </div>
-
-
-        <form id="formProduto">
-
-            <label for="nome">
-                Nome
-            </label>
-
-            <input
-                type="text"
-                id="nome"
-                required
-            >
-
-
-            <label for="categoria">
-                Categoria
-            </label>
-
-            <input
-                type="text"
-                id="categoria"
-                required
-            >
-
-
-            <label for="preco">
-                Preço
-            </label>
-
-            <input
-                type="number"
-                id="preco"
-                step="0.01"
-                min="0"
-                required
-            >
-
-
-            <label class="checkbox">
-
-                <input
-                    type="checkbox"
-                    id="estoque"
-                >
-
-                Produto em estoque
-
-            </label>
-
-
-            <div class="botoes-form">
+            <div class="topo-botoes">
 
                 <button
                     type="button"
-                    id="cancelar"
-                    class="btn-cancelar"
+                    id="btnTema"
+                    class="btn-tema"
+                >
+                    🌙
+                </button>
+
+                <button
+                    type="button"
+                    id="btnAdicionar"
+                    class="btn-adicionar"
+                >
+                    + Adicionar produto
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="barra">
+
+            <div class="busca">
+
+                🔍
+
+                <input
+                    type="text"
+                    id="pesquisa"
+                    placeholder="Pesquisar..."
+                >
+
+            </div>
+
+        </div>
+
+        <div class="tabela-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Estoque</th>
+                        <th>Preço</th>
+                        <th>Ações</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="listaProdutos"></tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <div id="modal" class="modal">
+
+        <div class="modal-conteudo">
+
+            <div class="modal-topo">
+
+                <h2 id="tituloModal">
+                    Adicionar produto
+                </h2>
+
+                <button
+                    type="button"
+                    id="fecharModal"
+                    class="fechar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="formProduto">
+
+                <label for="nome">
+                    Nome
+                </label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    required
+                >
+
+                <label for="categoria">
+                    Categoria
+                </label>
+
+                <input
+                    type="text"
+                    id="categoria"
+                    required
+                >
+
+                <label for="preco">
+                    Preço
+                </label>
+
+                <input
+                    type="number"
+                    id="preco"
+                    step="0.01"
+                    min="0"
+                    required
+                >
+
+                <label class="checkbox">
+
+                    <input
+                        type="checkbox"
+                        id="estoque"
+                    >
+
+                    Produto em estoque
+
+                </label>
+
+                <div class="botoes-form">
+
+                    <button
+                        type="button"
+                        id="cancelar"
+                        class="btn-cancelar"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn-salvar"
+                    >
+                        Salvar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div
+        id="modalAlteracoes"
+        class="modal-alteracoes"
+    >
+
+        <div class="caixa-alteracoes">
+
+            <div class="icone-alteracoes">
+                !
+            </div>
+
+            <h2>
+                Alterações não salvas
+            </h2>
+
+            <p>
+                Você fez alterações neste produto que ainda não foram salvas.
+            </p>
+
+            <p>
+                Deseja sair sem salvar?
+            </p>
+
+            <div class="botoes-alteracoes">
+
+                <button
+                    type="button"
+                    id="continuarEditando"
+                >
+                    Continuar editando
+                </button>
+
+                <button
+                    type="button"
+                    id="sairSemSalvar"
+                >
+                    Sair sem salvar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div
+        id="modalExcluir"
+        class="modal-excluir"
+    >
+
+        <div class="caixa-excluir">
+
+            <div class="icone-excluir">
+                !
+            </div>
+
+            <h2>
+                Excluir produto?
+            </h2>
+
+            <p id="mensagemExcluir">
+                Tem certeza que deseja excluir este produto?
+            </p>
+
+            <div class="botoes-excluir">
+
+                <button
+                    type="button"
+                    id="cancelarExclusao"
                 >
                     Cancelar
                 </button>
 
                 <button
-                    type="submit"
-                    class="btn-salvar"
+                    type="button"
+                    id="confirmarExclusao"
                 >
-                    Salvar
+                    Excluir
                 </button>
 
             </div>
 
-        </form>
+        </div>
 
     </div>
 
-</div>
+    <div
+        id="notificacao"
+        class="notificacao"
+    >
 
+        <span id="iconeNotificacao">
+            ✓
+        </span>
 
-<script src="script.js"></script>
+        <span id="textoNotificacao">
+            Sucesso!
+        </span>
+
+        <button
+            id="desfazer"
+            class="desfazer"
+        >
+            Desfazer
+        </button>
+
+    </div>
+
+    <script src="script.js"></script>
 
 </body>
 
 </html>
+
